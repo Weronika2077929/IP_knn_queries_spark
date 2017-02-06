@@ -38,7 +38,7 @@ public class KnnQueriesSparkSQL {
                 .config("spark.some.config.option", "some-value")
                 .getOrCreate();
 
-        Dataset<Row> df = spark.read().csv("C:/Users/Wera/Documents/4thyear/IP/Java_Spark_Project/src/main/resources/10.csv");
+        Dataset<Row> df = spark.read().csv("C:/Users/Wera/Documents/4thyear/IP/Java_Spark_Project/src/main/resources/10000.csv");
 
 //        System.out.println("min " + df.filter(min("_c0")).show(); );
 //        df.groupBy("_c0").show();
