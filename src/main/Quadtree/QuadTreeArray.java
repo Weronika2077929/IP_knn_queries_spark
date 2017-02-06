@@ -1,6 +1,8 @@
 import java.io.File;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 
 /**
  * Datastructure: A point Quad Tree for representing 2D data. Each
@@ -280,7 +282,7 @@ public class QuadTreeArray {
 
             case LEAF:
                 resposne = node;
-                System.out.println(node.getX() + " " + node.getY() + " " + node.getW() + " " + node.getH());
+//                System.out.println(node.getX() + " " + node.getY() + " " + node.getW() + " " + node.getH());
                 break;
 
             case POINTER:
@@ -470,23 +472,38 @@ public class QuadTreeArray {
         node.addPoint(point);
     }
 
-    private boolean isCircleOverlappingSquare(double x_circle, double y_circle, double radious, NodeArray node){
+    public boolean isCircleOverlappingSquare(Circle circle, NodeArray node){
 
         Double x_rectangleCentre = node.getX() + node.getW()/2;
-        Double y_rectangleCentre = node.getY() + node.getY()/2;
+        Double y_rectangleCentre = node.getY() + node.getH()/2;
 
-        Double x_distance = Math.abs(x_circle - x_rectangleCentre);
-        Double y_distance = Math.abs(y_circle - y_rectangleCentre);
+        Double x_distance = Math.abs(circle.getX() - x_rectangleCentre);
+        Double y_distance = Math.abs(circle.getY() - y_rectangleCentre);
 
-        if (x_distance > (node.getW()/2 + radious)) return false;
-        if (y_distance > (node.getH()/2 + radious)) return false;
+        if (x_distance > (node.getW()/2 + circle.getRadius())) return false;
+        if (y_distance > (node.getH()/2 + circle.getRadius())) return false;
 
         if (x_distance <= (node.getW()/2)) return true;
         if (y_distance <= (node.getH()/2)) return true;
 
         Double cornerDistance_sq = Math.pow(x_distance - node.getW()/2, 2) + Math.pow(y_distance - node.getH()/2, 2) ;
 
-        return (cornerDistance_sq <= Math.pow(radious,2));
+        return (cornerDistance_sq <= Math.pow(circle.getRadius(),2));
     }
 
+    public LinkedList<NodeArray> findPartitions(NodeArray node, Circle circle) {
+        LinkedList<NodeArray> partitions = new LinkedList<>();
+        if(isCircleOverlappingSquare(circle,node)) {
+            if(node.getNodeArrayType() == NodeType.POINTER){
+                partitions.addAll(findPartitions(node.getNw(),circle));
+                partitions.addAll(findPartitions(node.getNe(),circle));
+                partitions.addAll(findPartitions(node.getSe(),circle));
+                partitions.addAll(findPartitions(node.getSw(),circle));
+            } else {
+                System.out.println( "Leaf node " + node.toString() + " " + node.getX() + " " +  node.getW() + " " + node.getY() + " " + node.getH());
+                partitions.add(node);
+            }
+        }
+        return partitions;
+    }
 }

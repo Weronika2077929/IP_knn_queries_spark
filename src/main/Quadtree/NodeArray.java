@@ -171,9 +171,14 @@ public class NodeArray {
     }
 
     public boolean isFileFull(){
-        System.out.println(file.length());
-        if( file.length() >= FILE_LENGHT )
+//        System.out.println(file.length());
+//        if( file.length() >= FILE_LENGHT )
+//            return true;
+//        return false;
+
+        if(points.size() >= 3 ){
             return true;
+        }
         return false;
     }
 

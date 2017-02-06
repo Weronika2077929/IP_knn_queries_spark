@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.text.Collator;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -14,7 +15,7 @@ import java.util.stream.Collectors;
 public class QuadTreePopulator {
 
     private static String FILE_PATH = "C:/Users/Wera/Documents/4thyear/IP/Java_Spark_Project/src/main/resources/";
-    private static String FILE_NAME = FILE_PATH + "10000";
+    private static String FILE_NAME = FILE_PATH + "1";
     private static long x_coordinate = 0;
     private static long y_coordinate = 0;
     private static int k = 5;
@@ -27,7 +28,7 @@ public class QuadTreePopulator {
             e.printStackTrace();
         }
 
-        QuadTreeArray quadTree = new QuadTreeArray(0,0, 1000000, 1000000);
+        QuadTreeArray quadTree = new QuadTreeArray(0,0,10,10);
 
         try {
             Scanner in = new Scanner(new FileReader(FILE_NAME));
@@ -39,79 +40,45 @@ public class QuadTreePopulator {
             e.printStackTrace();
         }
 
-        NodeArray partition = quadTree.findPariton(x_coordinate, y_coordinate);
-        System.out.println( partition.getX() + " " + partition.getY());
-        findNearestNeighbors(partition, x_coordinate,y_coordinate, k);
+        NodeArray mainPartition = quadTree.findPariton(x_coordinate, y_coordinate);
+        List nearestNeighbours = findNearestNeighbours(mainPartition, x_coordinate ,y_coordinate);
+        Circle circle = findFurthestNeighbourCircle( x_coordinate, y_coordinate, nearestNeighbours);
 
-//        quadTree.set(1,1, null);
-//        quadTree.set(1,2, null);
-//        quadTree.set(1,4, null);
-//        quadTree.set(1,3, null);
-//        quadTree.set(2,2, null);
-//        quadTree.set(5,10, null);
-//        quadTree.set(10,1, null);
-//        quadTree.set(1,5, null);
-//        quadTree.set(2,1, null);
-//        quadTree.set(3,1, null);
-//        quadTree.set(5,1, null);
-//        quadTree.set(6,1, null);
-//        quadTree.set(7,1, null);
-//        quadTree.set(8,1, null);
-//        quadTree.set(9,1, null);
-//        quadTree.set(2,3, null);
-//        quadTree.set(3,2, null);
-//        quadTree.set(5,3, null);
-//        quadTree.set(6,2, null);
-//        quadTree.set(7,3, null);
-//        quadTree.set(8,2, null);
-//        quadTree.set(9,3, null);
+        LinkedList<NodeArray> partitons = quadTree.findPartitions(quadTree.getRootNodeArray(), new Circle(5,0,5));
 
-//
-//        System.out.println();
-//
-//        quadTree.traverse(quadTree.getRootNodeArray(), new FuncArray() {
+//        FuncArray funcCircleOverlappingSquare = new FuncArray() {
 //            @Override
 //            public void call(QuadTreeArray quadTree, NodeArray node) {
-//                System.out.println(node.getPoints().toString());
-////                System.out.println(node.getFileSize());
+//                System.out.println("NODES " + node.toString() + " Size " + node.getX() + " " + node.getW());
 //            }
-//        });
+//        };
+//
+//        quadTree.traverse(quadTree.getRootNodeArray(), funcCircleOverlappingSquare);
+
+        for ( NodeArray partition : partitons){
+            findNearestNeighbours(partition, x_coordinate,y_coordinate);
+
+        }
     }
 
-    private static void findNearestNeighbors(NodeArray partition, long x_coordinate, long y_coordinate, int k) {
+    private static Circle findFurthestNeighbourCircle(double x_coordinate, double y_coordinate, List<Neighbour> nearestNeighbours) {
+        Neighbour furthestNeighbour = nearestNeighbours.get(nearestNeighbours.size()-1);
+        double radious = Math.sqrt(Math.pow(x_coordinate - furthestNeighbour.getPoint().getX(), 2) + Math.pow(y_coordinate - furthestNeighbour.getPoint().getY(), 2));
+        return new Circle(x_coordinate, y_coordinate, radious);
+    }
 
-        LinkedHashMap<Point, Double> nearestNeighbours = new LinkedHashMap<>();
+    private static List<Neighbour> findNearestNeighbours(NodeArray partition, long x_coordinate, long y_coordinate) {
+
+        LinkedList<Neighbour> nearestNeighbours = new LinkedList<>();
 
         for (Point point : partition.getPoints()) {
             double distance = Math.sqrt(Math.pow(x_coordinate - point.getX(), 2) + Math.pow(y_coordinate - point.getY(), 2));
-            nearestNeighbours.put(point, distance);
+            nearestNeighbours.add(new Neighbour(point,distance));
         }
 
-        LinkedHashMap<Point, Double> sortedMap = nearestNeighbours.entrySet()
-                .stream()
-                .sorted(Map.Entry.comparingByValue())
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        Map.Entry::getValue,
-                        (e1, e2) -> e1,
-                        LinkedHashMap::new
-                ));
+        Collections.sort(nearestNeighbours, new NeighbourComparator());
 
-        System.out.println();
-
-        int i = 0;
-        for(Map.Entry<Point, Double> entry: sortedMap.entrySet()) {
-            System.out.println("x: " + entry.getKey().getX()
-                + ", y: " + entry.getKey().getY()
-                + ", distance: " + entry.getValue());
-
-            i++;
-            if(i == k) {
-                break;
-            }
-        }
-
-        System.out.println(sortedMap.size());
+        return nearestNeighbours;
     }
 }
 
