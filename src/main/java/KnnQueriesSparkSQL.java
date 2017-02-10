@@ -76,7 +76,6 @@ public class KnnQueriesSparkSQL {
                      + " - _c1 , 2))");
 
             sqlVar.show(k);
-            break;
         }
 
         long estimatedTime = System.currentTimeMillis() - startTime;
