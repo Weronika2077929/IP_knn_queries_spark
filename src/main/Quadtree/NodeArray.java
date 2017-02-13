@@ -4,10 +4,11 @@ import java.util.ArrayList;
 /**
  * Created by Wera on 29/01/2017.
  */
-public class NodeArray {
+public class NodeArray implements Serializable{
 
     private String FILE_PATH = "C:/Users/Wera/Documents/4thyear/IP/Java_Spark_Project/src/main/resources/quadtree_data/";
-    private long FILE_LENGHT = 1280;
+//    file size in bytes
+    private long FILE_LENGHT = 1024*1024;
 
     private double x;
     private double y;
@@ -171,15 +172,14 @@ public class NodeArray {
     }
 
     public boolean isFileFull(){
-//        System.out.println(file.length());
-//        if( file.length() >= FILE_LENGHT )
-//            return true;
-//        return false;
-
-        if(points.size() >= 3 ){
+        if( file.length() >= FILE_LENGHT )
             return true;
-        }
         return false;
+
+//        if(points.size() >= 100 ){
+//            return true;
+//        }
+//        return false;
     }
 
     public long getFileSize(){
@@ -201,7 +201,7 @@ public class NodeArray {
     public String toString(){
         String s = "";
         for( Point p : points){
-            s += "("+ p.getX() + "," + p.getY() + ")";
+            s += p.getX() + "," + p.getY();
         }
         return s;
     }

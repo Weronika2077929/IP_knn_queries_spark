@@ -1,9 +1,6 @@
-import java.io.File;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
-
 /**
  * Datastructure: A point Quad Tree for representing 2D data. Each
  * region has the same ratio as the bounds for the tree.
@@ -11,8 +8,9 @@ import java.util.Queue;
  * The implementation currently requires pre-determined bounds for data as it
  * can not rebalance itself to that degree.
  */
-public class QuadTreeArray {
-
+public class QuadTreeArray implements Serializable{
+    private int count = 0;
+    public long time = 0;
 
     private NodeArray root_;
     private int count_ = 0;
@@ -47,7 +45,10 @@ public class QuadTreeArray {
      * @param {Object} value The value associated with the point.
      */
     public void set(double x, double y, Object value) {
-
+        count++;
+        if(count%100 == 0) {
+            System.out.println(count);
+        }
         NodeArray root = this.root_;
         if (x < root.getX() || y < root.getY() || x > root.getX() + root.getW() || y > root.getY() + root.getH()) {
             throw new QuadTreeException("Out of bounds : (" + x + ", " + y + ")");
@@ -306,6 +307,7 @@ public class QuadTreeArray {
      * @private
      */
     private boolean insert(NodeArray parent, Point point) {
+        long start = System.nanoTime();
         Boolean result = false;
         switch (parent.getNodeArrayType()) {
             case EMPTY:
@@ -331,6 +333,8 @@ public class QuadTreeArray {
             default:
                 throw new QuadTreeException("Invalid nodeType in parent");
         }
+        long end = System.nanoTime();
+        time += end - start;
         return result;
     }
 
@@ -344,7 +348,6 @@ public class QuadTreeArray {
         ArrayList<Point> oldPoints = node.getPoints();
         node.emptyArrayList();
 
-        System.out.println("Split");
         node.deleteFile();
 
         node.setNodeArrayType(NodeType.POINTER);
@@ -491,19 +494,19 @@ public class QuadTreeArray {
         return (cornerDistance_sq <= Math.pow(circle.getRadius(),2));
     }
 
-    public LinkedList<NodeArray> findPartitions(NodeArray node, Circle circle) {
+    public LinkedList<NodeArray> findPartitions(NodeArray node, Circle circle, NodeArray mainPartition) {
         LinkedList<NodeArray> partitions = new LinkedList<>();
         if(isCircleOverlappingSquare(circle,node)) {
             if(node.getNodeArrayType() == NodeType.POINTER){
-                partitions.addAll(findPartitions(node.getNw(),circle));
-                partitions.addAll(findPartitions(node.getNe(),circle));
-                partitions.addAll(findPartitions(node.getSe(),circle));
-                partitions.addAll(findPartitions(node.getSw(),circle));
+                partitions.addAll(findPartitions(node.getNw(),circle, null));
+                partitions.addAll(findPartitions(node.getNe(),circle, null));
+                partitions.addAll(findPartitions(node.getSe(),circle, null));
+                partitions.addAll(findPartitions(node.getSw(),circle, null));
             } else {
-                System.out.println( "Leaf node " + node.toString() + " " + node.getX() + " " +  node.getW() + " " + node.getY() + " " + node.getH());
                 partitions.add(node);
             }
         }
+        partitions.remove(mainPartition);
         return partitions;
     }
 }

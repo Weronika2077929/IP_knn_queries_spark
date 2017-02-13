@@ -17,4 +17,9 @@ public class Neighbour {
     public double getDistance() {
         return distance;
     }
+
+    @Override
+    public String toString(){
+        return point.getX() + " " + point.getY() + " " + distance;
+    }
 }

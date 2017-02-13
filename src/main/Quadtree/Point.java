@@ -1,4 +1,6 @@
-public class Point implements Comparable {
+import java.io.Serializable;
+
+public class Point implements Comparable, Serializable{
 
     private double x;
     private double y;
@@ -43,7 +45,7 @@ public class Point implements Comparable {
 
     @Override
     public String toString() {
-        return "(" + this.x + ", " + this.y + ")";
+        return this.x + ", " + this.y;
     }
 
     @Override
