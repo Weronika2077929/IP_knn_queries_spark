@@ -1,6 +1,3 @@
-///**
-// * Created by Wera on 2016-11-13.
-// */
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.spark.sql.Column;

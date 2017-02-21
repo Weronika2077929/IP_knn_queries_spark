@@ -3,7 +3,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.*;
 
 
 /**
@@ -12,7 +11,7 @@ import java.util.*;
 public class QuadTreePopulator {
 
     private static String FILE_PATH = "C:/Users/Wera/Documents/4thyear/IP/Java_Spark_Project/src/main/resources/";
-    private static String FILE_NAME_DATASET = FILE_PATH + "1000";
+    private static String FILE_NAME_DATASET = FILE_PATH + "10000000";
     private static String FILE_NAME_QUERY_POINTS = FILE_PATH + "10";
     private static double x_coordinate = 0;
     private static double y_coordinate = 0;
@@ -37,6 +36,8 @@ public class QuadTreePopulator {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+
+        quadTree.saveQuadTreetoDisk();
 
         LinkedList<Point> queryPoints = new LinkedList<>();
 //        Skips first line in the file

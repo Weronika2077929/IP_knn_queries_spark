@@ -1,5 +1,5 @@
-import java.io.*;
-import java.util.ArrayList;
+
+import java.util.HashSet;
 
 /**
  * Created by Wera on 29/01/2017.
@@ -8,14 +8,15 @@ public class NodeArray implements Serializable{
 
     private String FILE_PATH = "C:/Users/Wera/Documents/4thyear/IP/Java_Spark_Project/src/main/resources/quadtree_data/";
 //    file size in bytes
-    private long FILE_LENGHT = 1024*1024;
+    private static int NODE_CAPACITY = 10000;
+    private long FILE_LENGTH = 1024*1024;
 
     private double x;
     private double y;
     private double w;
     private double h;
     private NodeArray opt_parent;
-    private ArrayList<Point> points;
+    private HashSet<Point> points;
     private NodeType nodetype = NodeType.EMPTY;
     private NodeArray nw;
     private NodeArray ne;
@@ -39,7 +40,7 @@ public class NodeArray implements Serializable{
         this.w = w;
         this.h = h;
         this.opt_parent = opt_parent;
-        this.points = new ArrayList<Point>();
+        this.points = new HashSet<>(NODE_CAPACITY);
         this.file = null;
     }
 
@@ -61,6 +62,10 @@ public class NodeArray implements Serializable{
 
     public double getW() {
         return w;
+    }
+
+    public HashSet<Point> getPoints() {
+        return points;
     }
 
     public void setW(double w) {
@@ -85,7 +90,7 @@ public class NodeArray implements Serializable{
 
     public void addPoint(Point point) {
         this.points.add(point);
-        addPointToFile(point);
+        //addPointToFile(point);
     }
 
     private void addPointToFile(Point point) {
@@ -120,9 +125,9 @@ public class NodeArray implements Serializable{
         }
     }
 
-    public ArrayList<Point> getPoints() {
-        return this.points;
-    }
+//    public ArrayList<Point> getPoints() {
+//        return this.points;
+//    }
 
     public void setNodeArrayType(NodeType nodetype) {
         this.nodetype = nodetype;
@@ -165,14 +170,14 @@ public class NodeArray implements Serializable{
         return se;
     }
 
-    public boolean isArrayFull(){
-        if( points.size() >= 3 )
+    public boolean isFull(){
+        if( points.size() >= NODE_CAPACITY )
             return true;
         return false;
     }
 
     public boolean isFileFull(){
-        if( file.length() >= FILE_LENGHT )
+        if( file.length() >= FILE_LENGTH)
             return true;
         return false;
 
@@ -186,34 +191,51 @@ public class NodeArray implements Serializable{
         return file.length();
     }
 
-    public void emptyArrayList() {
+    public void clear() {
         this.points = null;
     }
 
-    public boolean nodeArrayContains( Point point ) {
-        for(Point p : points){
-            if(p.compareTo(point) == 0)
-                return true;
-        }
-        return false;
+    public boolean nodeContains(Point point ) {
+        return points.contains(point);
     }
 
-    public String toString(){
-        String s = "";
-        for( Point p : points){
-            s += p.getX() + "," + p.getY();
-        }
-        return s;
-    }
 
     public void deleteFile(){
         this.file.delete();
     }
+
     public File getFile(){
         return this.file;
     }
 
     public String getFileName(){
         return this.fileName;
+    }
+
+    public void saveToFile() {
+        StringBuilder pointsString = new StringBuilder();
+        for(Point point : points){
+            pointsString.append(point.toString() + "\n");
+        }
+
+        if(file == null) {
+            this.createNewFile();
+        }
+
+        BufferedWriter bw = null;
+        try {
+            bw = new BufferedWriter(new FileWriter(this.file, true));
+            bw.write(pointsString.toString());
+            bw.flush();
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+        } finally {
+            try {
+                bw.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
     }
 }

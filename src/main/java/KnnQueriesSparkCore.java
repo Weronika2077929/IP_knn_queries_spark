@@ -14,7 +14,7 @@ import scala.Tuple3;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.util.*;
+
 
 public class KnnQueriesSparkCore {
 

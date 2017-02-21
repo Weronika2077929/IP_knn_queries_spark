@@ -1,6 +1,9 @@
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.function.Function;
+
 /**
  * Datastructure: A point Quad Tree for representing 2D data. Each
  * region has the same ratio as the bounds for the tree.
@@ -45,10 +48,6 @@ public class QuadTreeArray implements Serializable{
      * @param {Object} value The value associated with the point.
      */
     public void set(double x, double y, Object value) {
-        count++;
-        if(count%100 == 0) {
-            System.out.println(count);
-        }
         NodeArray root = this.root_;
         if (x < root.getX() || y < root.getY() || x > root.getX() + root.getW() || y > root.getY() + root.getH()) {
             throw new QuadTreeException("Out of bounds : (" + x + ", " + y + ")");
@@ -130,7 +129,7 @@ public class QuadTreeArray implements Serializable{
         this.root_.setSw(null);
         this.root_.setSe(null);
         this.root_.setNodeArrayType(NodeType.EMPTY);
-        this.root_.emptyArrayList();
+//        this.root_.clear();
         this.count_ = 0;
     }
 
@@ -315,9 +314,9 @@ public class QuadTreeArray implements Serializable{
                 result = true;
                 break;
             case LEAF:
-                if ( parent.nodeArrayContains(point) ) {
+                if ( parent.nodeContains(point) ) {
                     result = false;
-                } else if ( parent.isFileFull() ) {
+                } else if ( parent.isFull() ) {
                     this.split(parent);
                     result = insert(parent,point);
                 } else {
@@ -345,10 +344,10 @@ public class QuadTreeArray implements Serializable{
      * @private
      */
     private void split(NodeArray node) {
-        ArrayList<Point> oldPoints = node.getPoints();
-        node.emptyArrayList();
+        HashSet<Point> oldPoints = node.getPoints();
+        node.clear();
 
-        node.deleteFile();
+//        node.deleteFile();
 
         node.setNodeArrayType(NodeType.POINTER);
 
@@ -508,5 +507,18 @@ public class QuadTreeArray implements Serializable{
         }
         partitions.remove(mainPartition);
         return partitions;
+    }
+
+    public void saveQuadTreetoDisk(){
+
+        FuncArray saveNodeToFile = new FuncArray() {
+            @Override
+            public void call(QuadTreeArray quadTree, NodeArray node) {
+                node.saveToFile();
+            }
+        };
+
+
+        traverse(this.root_, saveNodeToFile);
     }
 }
