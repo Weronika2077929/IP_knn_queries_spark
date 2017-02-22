@@ -14,13 +14,15 @@ import scala.Tuple3;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.util.LinkedList;
+import java.util.Scanner;
 
 
 public class KnnQueriesSparkCore {
 
     private static String FILE_PATH = "C:/Users/Wera/Documents/4thyear/IP/Java_Spark_Project/src/main/resources/";
     private static String FILE_PATH_QUADTREE_DATA = "C:/Users/Wera/Documents/4thyear/IP/Java_Spark_Project/src/main/resources/quadtree_data/";
-    private static String FILE_NAME_DATASET = FILE_PATH + "1000";
+    private static String FILE_NAME_DATASET = FILE_PATH + "10000000";
     private static String FILE_NAME_QUERY_POINTS = FILE_PATH + "10";
     private static double x_coordinate = 0;
     private static double y_coordinate = 0;
@@ -29,6 +31,7 @@ public class KnnQueriesSparkCore {
 
     public static void main(String[] args) {
 
+        long startTime = System.currentTimeMillis();
 //        number of nn queries to find
         int k = 5;
 
@@ -85,5 +88,7 @@ public class KnnQueriesSparkCore {
             System.out.println();
         }
 
+        long estimatedTime = System.currentTimeMillis() - startTime;
+        System.out.println(estimatedTime + " miliseconds");
     }
 }

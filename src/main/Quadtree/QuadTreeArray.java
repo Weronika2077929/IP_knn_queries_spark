@@ -58,55 +58,6 @@ public class QuadTreeArray implements Serializable{
     }
 
     /**
-     * Gets the value of the point at (x, y) or null if the point is empty.
-     *
-     * @param {double} x The x-coordinate.
-     * @param {double} y The y-coordinate.
-     * @param {Object} opt_default The default value to return if the node doesn't
-     *                 exist.
-     * @return {*} The value of the node, the default value if the node
-     *         doesn't exist, or undefined if the node doesn't exist and no default
-     *         has been provided.
-     */
-//    public Object get(double x, double y, Object opt_default) {
-//        NodeArray node = this.find(this.root_, x, y);
-//        return node != null ? node.getPoint().getValue() : opt_default;
-//    }
-
-    /**
-     * Removes a point from (x, y) if it exists.
-     *
-     * @param {double} x The x-coordinate.
-     * @param {double} y The y-coordinate.
-     * @return {Object} The value of the node that was removed, or null if the
-     *         node doesn't exist.
-     */
-//    public Object remove(double x, double y) {
-//        NodeArray node = this.find(this.root_, x, y);
-//        if (node != null) {
-//            Object value = node.getPoint().getValue();
-//            node.setPoint(null);
-//            node.setNodeArrayType(NodeType.EMPTY);
-//            this.balance(node);
-//            this.count_--;
-//            return value;
-//        } else {
-//            return null;
-//        }
-//    }
-
-    /**
-     * Returns true if the point at (x, y) exists in the tree.
-     *
-     * @param {double} x The x-coordinate.
-     * @param {double} y The y-coordinate.
-     * @return {boolean} Whether the tree contains a point at (x, y).
-     */
-//    public boolean contains(double x, double y) {
-//        return this.get(x, y, null) != null;
-//    }
-
-    /**
      * @return {boolean} Whether the tree is empty.
      */
     public boolean isEmpty() {
@@ -129,72 +80,10 @@ public class QuadTreeArray implements Serializable{
         this.root_.setSw(null);
         this.root_.setSe(null);
         this.root_.setNodeArrayType(NodeType.EMPTY);
-//        this.root_.clear();
+        this.root_.clear();
         this.count_ = 0;
     }
 
-    /**
-     * Returns an array containing the coordinates of each point stored in the tree.
-     * @return {Array.<Point>} Array of coordinates.
-     */
-//    public Point[] getKeys() {
-//        final List<Point> arr = new ArrayList<Point>();
-//        this.traverse(this.root_, new FuncArray() {
-//            @Override
-//            public void call(QuadTreeArray quadTree, NodeArray node) {
-//                arr.add(node.getPoint());
-//            }
-//        });
-//        return arr.toArray(new Point[arr.size()]);
-//    }
-
-    /**
-     * Returns an array containing all values stored within the tree.
-     * @return {Array.<Object>} The values stored within the tree.
-     */
-
-//    public Object[] getValues() {
-//        final List<Object> arr = new ArrayList<Object>();
-//        this.traverse(this.root_, new FuncArray() {
-//            @Override
-//            public void call(QuadTreeArray quadTree, NodeArray node) {
-//                arr.add(node.getPoint().getValue());
-//            }
-//        });
-//
-//        return arr.toArray(new Object[arr.size()]);
-//    }
-
-//    public Point[] searchIntersect(final double xmin, final double ymin, final double xmax, final double ymax) {
-//        final List<Point> arr = new ArrayList<Point>();
-//        this.navigate(this.root_, new FuncArray() {
-//            @Override
-//            public void call(QuadTreeArray quadTree, NodeArray node) {
-//                Point pt = node.getPoint();
-//                if (pt.getX() < xmin || pt.getX() > xmax || pt.getY() < ymin || pt.getY() > ymax) {
-//                    // Definitely not within the polygon!
-//                } else {
-//                    arr.add(node.getPoint());
-//                }
-//
-//            }
-//        }, xmin, ymin, xmax, ymax);
-//        return arr.toArray(new Point[arr.size()]);
-//    }
-
-//    public Point[] searchWithin(final double xmin, final double ymin, final double xmax, final double ymax) {
-//        final List<Point> arr = new ArrayList<Point>();
-//        this.navigate(this.root_, new FuncArray() {
-//            @Override
-//            public void call(QuadTreeArray quadTree, NodeArray node) {
-//                Point pt = node.getPoint();
-//                if (pt.getX() > xmin && pt.getX() < xmax && pt.getY() > ymin && pt.getY() < ymax) {
-//                    arr.add(node.getPoint());
-//                }
-//            }
-//        }, xmin, ymin, xmax, ymax);
-//        return arr.toArray(new Point[arr.size()]);
-//    }
 
     public void navigate(NodeArray node, FuncArray func, double xmin, double ymin, double xmax, double ymax) {
         switch (node.getNodeArrayType()) {
@@ -221,29 +110,7 @@ public class QuadTreeArray implements Serializable{
                 node.getY() > bottom ||
                 (node.getY() + node.getH()) < top);
     }
-    /**
-     * Clones the quad-tree and returns the new instance.
-     * @return {QuadTree} A clone of the tree.
-     */
-//    public QuadTreeArray clone() {
-//        double x1 = this.root_.getX();
-//        double y1 = this.root_.getY();
-//        double x2 = x1 + this.root_.getW();
-//        double y2 = y1 + this.root_.getH();
-//        final QuadTreeArray clone = new QuadTreeArray(x1, y1, x2, y2);
-//        // This is inefficient as the clone needs to recalculate the structure of the
-//        // tree, even though we know it already.  But this is easier and can be
-//        // optimized when/if needed.
-//        this.traverse(this.root_, new Func() {
-//            @Override
-//            public void call(QuadTreeArray quadTree, NodeArray node) {
-//                clone.set(node.getPoint().getX(), node.getPoint().getY(), node.getPoint().getValue());
-//            }
-//        });
-//
-//
-//        return clone;
-//    }
+
 
     /**
      * Traverses the tree depth-first, with quadrants being traversed in clockwise
@@ -365,83 +232,6 @@ public class QuadTreeArray implements Serializable{
             this.insert(node, p);
         }
     }
-
-    /**
-     * Attempts to balance a node. A node will need balancing if all its children
-     * are empty or it contains just one leaf.
-     * @param {QuadTree.NodeArray} node The node to balance.
-     * @private
-     */
-//    private void balance(NodeArray node) {
-//        switch (node.getNodeArrayType()) {
-//            case EMPTY:
-//            case LEAF:
-//                if (node.getParent() != null) {
-//                    this.balance(node.getParent());
-//                }
-//                break;
-//
-//            case POINTER: {
-//                NodeArray nw = node.getNw();
-//                NodeArray ne = node.getNe();
-//                NodeArray sw = node.getSw();
-//                NodeArray se = node.getSe();
-//                NodeArray firstLeaf = null;
-//
-//                // Look for the first non-empty child, if there is more than one then we
-//                // break as this node can't be balanced.
-//                if (nw.getNodeArrayType() != NodeType.EMPTY) {
-//                    firstLeaf = nw;
-//                }
-//                if (ne.getNodeArrayType() != NodeType.EMPTY) {
-//                    if (firstLeaf != null) {
-//                        break;
-//                    }
-//                    firstLeaf = ne;
-//                }
-//                if (sw.getNodeArrayType() != NodeType.EMPTY) {
-//                    if (firstLeaf != null) {
-//                        break;
-//                    }
-//                    firstLeaf = sw;
-//                }
-//                if (se.getNodeArrayType() != NodeType.EMPTY) {
-//                    if (firstLeaf != null) {
-//                        break;
-//                    }
-//                    firstLeaf = se;
-//                }
-//
-//                if (firstLeaf == null) {
-//                    // All child nodes are empty: so make this node empty.
-//                    node.setNodeArrayType(NodeType.EMPTY);
-//                    node.setNw(null);
-//                    node.setNe(null);
-//                    node.setSw(null);
-//                    node.setSe(null);
-//
-//                } else if (firstLeaf.getNodeArrayType() == NodeType.POINTER) {
-//                    // Only child was a pointer, therefore we can't rebalance.
-//                    break;
-//
-//                } else {
-//                    // Only child was a leaf: so update node's point and make it a leaf.
-//                    node.setNodeArrayType(NodeType.LEAF);
-//                    node.setNw(null);
-//                    node.setNe(null);
-//                    node.setSw(null);
-//                    node.setSe(null);
-//                    node.setPoint(firstLeaf.getPoint());
-//                }
-//
-//                // Try and balance the parent as well.
-//                if (node.getParent() != null) {
-//                    this.balance(node.getParent());
-//                }
-//            }
-//            break;
-//        }
-//    }
 
     /**
      * Returns the child quadrant within a node that contains the given (x, y)

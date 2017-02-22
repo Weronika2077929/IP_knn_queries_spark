@@ -1,14 +1,15 @@
 
+import java.io.*;
 import java.util.HashSet;
 
 /**
  * Created by Wera on 29/01/2017.
  */
-public class NodeArray implements Serializable{
+public class NodeArray implements Serializable {
 
-    private String FILE_PATH = "C:/Users/Wera/Documents/4thyear/IP/Java_Spark_Project/src/main/resources/quadtree_data/";
+    private String FILE_PATH = "C:/Users/Wera/Documents/4thyear/IP/QuadTreeData/";
 //    file size in bytes
-    private static int NODE_CAPACITY = 10000;
+    private static int NODE_CAPACITY = 100000;
     private long FILE_LENGTH = 1024*1024;
 
     private double x;
@@ -125,10 +126,6 @@ public class NodeArray implements Serializable{
         }
     }
 
-//    public ArrayList<Point> getPoints() {
-//        return this.points;
-//    }
-
     public void setNodeArrayType(NodeType nodetype) {
         this.nodetype = nodetype;
     }
@@ -180,11 +177,6 @@ public class NodeArray implements Serializable{
         if( file.length() >= FILE_LENGTH)
             return true;
         return false;
-
-//        if(points.size() >= 100 ){
-//            return true;
-//        }
-//        return false;
     }
 
     public long getFileSize(){

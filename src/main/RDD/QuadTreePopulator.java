@@ -3,6 +3,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Scanner;
 
 
 /**
@@ -11,20 +15,62 @@ import java.io.IOException;
 public class QuadTreePopulator {
 
     private static String FILE_PATH = "C:/Users/Wera/Documents/4thyear/IP/Java_Spark_Project/src/main/resources/";
-    private static String FILE_NAME_DATASET = FILE_PATH + "10000000";
+    private static String FILE_PATH_QUADTREE_DATA = "C:/Users/Wera/Documents/4thyear/IP/QuadTreeData/";
+    private static String FILE_NAME_DATASET = FILE_PATH + "1000000";
     private static String FILE_NAME_QUERY_POINTS = FILE_PATH + "10";
-    private static double x_coordinate = 0;
-    private static double y_coordinate = 0;
     private static int k = 5;
 
     public static void main( String[] args ){
 
+        cleanDataDirectory();
+
+        long startTime = System.currentTimeMillis();
+
+        QuadTreeArray quadTree = buildQuadTree();
+
+        LinkedList<Point> queryPoints = loadQueryPoints();
+
+        long queryTimeStart = System.currentTimeMillis();
+
+        for (Point queryPoint : queryPoints){
+            System.out.println(queryPoint.getX() + " " + queryPoint.getY());
+            nnQuery(quadTree, queryPoint.getX(), queryPoint.getY());
+            System.out.println();
+        }
+
+        long estimatedTime = System.currentTimeMillis() - startTime;
+        long estimatedQueryResponseTime = System.currentTimeMillis() - queryTimeStart;
+        System.out.println("Total time: " + estimatedTime + " miliseconds");
+        System.out.println("Query time: " + estimatedQueryResponseTime + " miliseconds");
+
+    }
+
+// TODO Check if LinkedList is the most efficient solution here
+    private static LinkedList<Point> loadQueryPoints() {
+        LinkedList<Point> queryPoints = new LinkedList<>();
+
+//  TODO solve the problem of skipping first line in the file
         try {
-            FileUtils.cleanDirectory(new File(FILE_PATH + "quadtree_data/"));
+            Scanner in = new Scanner(new FileReader(FILE_NAME_QUERY_POINTS));
+            while(in.hasNext()) {
+                String[] data = in.nextLine().split(",");
+                queryPoints.add(new Point(Double.parseDouble(data[0]), Double.parseDouble(data[1]), null));
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        return queryPoints;
+    }
+
+    private static void cleanDataDirectory() {
+        try {
+            FileUtils.cleanDirectory(new File(FILE_PATH_QUADTREE_DATA));
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
 
+    private static QuadTreeArray buildQuadTree() {
         QuadTreeArray quadTree = new QuadTreeArray(0,0,1000000,1000000);
 
         try {
@@ -38,26 +84,7 @@ public class QuadTreePopulator {
         }
 
         quadTree.saveQuadTreetoDisk();
-
-        LinkedList<Point> queryPoints = new LinkedList<>();
-//        Skips first line in the file
-        try {
-            Scanner in = new Scanner(new FileReader(FILE_NAME_QUERY_POINTS));
-            while(in.hasNext()) {
-                String[] data = in.nextLine().split(",");
-                queryPoints.add(new Point(Double.parseDouble(data[0]), Double.parseDouble(data[1]), null));
-            }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-
-        for (Point queryPoint : queryPoints){
-            System.out.println(queryPoint.getX() + " " + queryPoint.getY());
-            nnQuery(quadTree, queryPoint.getX(), queryPoint.getY());
-            System.out.println();
-            System.out.println();
-        }
-
+        return quadTree;
     }
 
     public static void nnQuery(QuadTreeArray quadTree, double x, double y) {
@@ -66,7 +93,7 @@ public class QuadTreePopulator {
 
         Circle circle = findFurthestNeighbourCircle( x, y, nearestNeighbours);
 
-//         one day change it to array list because get is an expensive fn in LinkedList
+//     TODO one day change it to array list because get is an expensive fn in LinkedList
         LinkedList<NodeArray> partitons = quadTree.findPartitions(quadTree.getRootNodeArray(), circle, mainPartition);
 
         for ( NodeArray partition : partitons){
