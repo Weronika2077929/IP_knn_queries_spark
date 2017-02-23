@@ -22,32 +22,69 @@ import java.util.Scanner;
 public class KnnQueriesSparkQuadTreeCosi {
 
     private static String FILE_PATH = "C:/Users/Wera/Documents/4thyear/IP/Java_Spark_Project/src/main/resources/";
-    private static String FILE_PATH_QUADTREE_DATA = "C:/Users/Wera/Documents/4thyear/IP/Java_Spark_Project/src/main/resources/quadtree_data/";
+    private static String FILE_PATH_QUADTREE_DATA = "C:/Users/Wera/Documents/4thyear/IP/QuadTreeData/";
     private static String FILE_NAME_DATASET = FILE_PATH + "1000";
     private static String FILE_NAME_QUERY_POINTS = FILE_PATH + "10";
-    private static double x_coordinate = 0;
-    private static double y_coordinate = 0;
     private static int k = 5;
 
-
     public static void main( String[] args ){
+
         long startTime = System.currentTimeMillis();
+
+        JavaSparkContext sc = sparkConfigSetUp();
+
+        cleanQuadTreeDataDirectory();
+
+        QuadTreeArray quadTree = buildQuadTree();
+
+        quadTree.makeQuadTreeSummary();
+
+        LinkedList<Point> queryPoints = loadQueryPoints();
+
+        long startQueryTime = System.currentTimeMillis();
+
+        for (Point queryPoint : queryPoints){
+            System.out.println(queryPoint.getX() + " " + queryPoint.getY());
+            nnQuery(quadTree, queryPoint.getX(), queryPoint.getY(), sc);
+            System.out.println();
+            System.out.println();
+        }
+
+        long estimatedQueryResponseTime = System.currentTimeMillis() - startQueryTime;
+        long estimatedTime = System.currentTimeMillis() - startTime;
+        System.out.println("Total time :" + estimatedTime + " miliseconds");
+        System.out.println("Query response time: " + estimatedQueryResponseTime + " miliseconds");
+    }
+
+    private static JavaSparkContext sparkConfigSetUp() {
         //        disable the log messages
         Logger.getLogger("org").setLevel(Level.OFF);
         Logger.getLogger("akka").setLevel(Level.OFF);
 
         SparkConf conf = new SparkConf().setAppName("knn_queries_spark_core").setMaster("local");
-        JavaSparkContext sc = new JavaSparkContext(conf);
+        return new JavaSparkContext(conf);
+    }
 
+    private static LinkedList<Point> loadQueryPoints() {
 
+//        read all the query points from the file
+        LinkedList<Point> queryPoints = new LinkedList<>();
+
+//        Skips first line in the file
         try {
-            FileUtils.cleanDirectory(new File(FILE_PATH + "quadtree_data/"));
-        } catch (IOException e) {
+            Scanner in = new Scanner(new FileReader(FILE_NAME_QUERY_POINTS));
+            while(in.hasNext()) {
+                String[] data = in.nextLine().split(",");
+                queryPoints.add(new Point(Double.parseDouble(data[0]), Double.parseDouble(data[1]), null));
+            }
+        } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+        return queryPoints;
+    }
 
+    private static QuadTreeArray buildQuadTree() {
         QuadTreeArray quadTree = new QuadTreeArray(0,0,1000000,1000000);
-
 //        populate quadtree
         try {
             Scanner in = new Scanner(new FileReader(FILE_NAME_DATASET));
@@ -59,31 +96,16 @@ public class KnnQueriesSparkQuadTreeCosi {
             e.printStackTrace();
         }
 
-//        read all the query points from the file
-        LinkedList<Point> queryPoints = new LinkedList<>();
-//        Skips first line in the file
+        quadTree.saveQuadTreetoDisk();
+        return quadTree;
+    }
+
+    private static void cleanQuadTreeDataDirectory() {
         try {
-            Scanner in = new Scanner(new FileReader(FILE_NAME_QUERY_POINTS));
-            while(in.hasNext()) {
-                String[] data = in.nextLine().split(",");
-                queryPoints.add(new Point(Double.parseDouble(data[0]), Double.parseDouble(data[1]), null));
-            }
-        } catch (FileNotFoundException e) {
+            FileUtils.cleanDirectory(new File(FILE_PATH_QUADTREE_DATA));
+        } catch (IOException e) {
             e.printStackTrace();
         }
-
-
-        for (Point queryPoint : queryPoints){
-            System.out.println(queryPoint.getX() + " " + queryPoint.getY());
-            nnQuery(quadTree, queryPoint.getX(), queryPoint.getY(), sc);
-            System.out.println();
-            System.out.println();
-        }
-
-        long estimatedTime = System.currentTimeMillis() - startTime;
-        System.out.println(estimatedTime + " miliseconds");
-
-        System.out.println(quadTree.time / 1000000);
     }
 
     public static void nnQuery(QuadTreeArray quadTree, double x, double y, JavaSparkContext sc) {

@@ -9,7 +9,7 @@ public class NodeArray implements Serializable {
 
     private String FILE_PATH = "C:/Users/Wera/Documents/4thyear/IP/QuadTreeData/";
 //    file size in bytes
-    private static int NODE_CAPACITY = 100000;
+    private static int NODE_CAPACITY = 100;
     private long FILE_LENGTH = 1024*1024;
 
     private double x;
@@ -183,6 +183,8 @@ public class NodeArray implements Serializable {
         return file.length();
     }
 
+    public long getNodeSize() { return points.size();}
+
     public void clear() {
         this.points = null;
     }
@@ -207,7 +209,7 @@ public class NodeArray implements Serializable {
     public void saveToFile() {
         StringBuilder pointsString = new StringBuilder();
         for(Point point : points){
-            pointsString.append(point.toString() + "\n");
+            pointsString.append(point.toString() + System.getProperty("line.separator"));
         }
 
         if(file == null) {

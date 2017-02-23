@@ -1,4 +1,4 @@
-import java.io.Serializable;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -12,11 +12,15 @@ import java.util.function.Function;
  * can not rebalance itself to that degree.
  */
 public class QuadTreeArray implements Serializable{
+
+    private static String FILE_PATH_SUMMARY = "C:/Users/Wera/Documents/4thyear/IP/QuadTreeData/";
     private int count = 0;
     public long time = 0;
 
     private NodeArray root_;
     private int count_ = 0;
+
+    private String summaryFilename;
 
     /**
      * Constructs a new quad tree.
@@ -133,6 +137,20 @@ public class QuadTreeArray implements Serializable{
                 this.traverse(node.getSe(), func);
                 this.traverse(node.getSw(), func);
                 this.traverse(node.getNw(), func);
+                break;
+        }
+    }
+    public void traverseWithStringBuilder(NodeArray node, FunctionSaveToSummary func, StringBuilder nodeSummary) {
+        switch (node.getNodeArrayType()) {
+            case LEAF:
+                func.call(this, node,nodeSummary);
+                break;
+
+            case POINTER:
+                this.traverseWithStringBuilder(node.getNe(), func, nodeSummary);
+                this.traverseWithStringBuilder(node.getSe(), func, nodeSummary);
+                this.traverseWithStringBuilder(node.getSw(), func, nodeSummary);
+                this.traverseWithStringBuilder(node.getNw(), func, nodeSummary);
                 break;
         }
     }
@@ -310,5 +328,54 @@ public class QuadTreeArray implements Serializable{
 
 
         traverse(this.root_, saveNodeToFile);
+    }
+
+    public void makeQuadTreeSummary() {
+
+        StringBuilder summary = new StringBuilder();
+
+        FunctionSaveToSummary saveNodeToSummary = new FunctionSaveToSummary() {
+            @Override
+            public void call(QuadTreeArray quadTree, NodeArray node, StringBuilder nodeSummary) {
+                nodeSummary.append(node.getX() + " " + node.getY() + " " + node.getW() + " " +  node.getH() + " " +  node.getNodeSize()+ " " + System.getProperty("line.separator") );
+            }
+        };
+
+        traverseWithStringBuilder(this.root_, saveNodeToSummary, summary);
+        System.out.println(summary.toString());
+
+        this.saveQuadTreeSummaryToDisk(summary);
+
+    }
+
+    private void saveQuadTreeSummaryToDisk(StringBuilder summary) {
+
+        File quadTreeSummaryFile = this.createQuadTreeSummaryFile();
+
+        BufferedWriter bw = null;
+        try {
+            bw = new BufferedWriter(new FileWriter(quadTreeSummaryFile, true));
+            bw.write(summary.toString());
+            bw.flush();
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+        } finally {
+            try {
+                bw.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private File createQuadTreeSummaryFile() {
+        this.summaryFilename = FILE_PATH_SUMMARY + "summary.txt";
+        File summaryFile = new File(summaryFilename);
+        try {
+            summaryFile.createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return summaryFile;
     }
 }

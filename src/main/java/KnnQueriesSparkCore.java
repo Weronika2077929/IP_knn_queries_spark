@@ -22,7 +22,7 @@ public class KnnQueriesSparkCore {
 
     private static String FILE_PATH = "C:/Users/Wera/Documents/4thyear/IP/Java_Spark_Project/src/main/resources/";
     private static String FILE_PATH_QUADTREE_DATA = "C:/Users/Wera/Documents/4thyear/IP/Java_Spark_Project/src/main/resources/quadtree_data/";
-    private static String FILE_NAME_DATASET = FILE_PATH + "10000000";
+    private static String FILE_NAME_DATASET = FILE_PATH + "1000";
     private static String FILE_NAME_QUERY_POINTS = FILE_PATH + "10";
     private static double x_coordinate = 0;
     private static double y_coordinate = 0;

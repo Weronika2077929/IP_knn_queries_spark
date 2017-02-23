@@ -22,7 +22,7 @@ public class QuadTreePopulator {
 
     public static void main( String[] args ){
 
-        cleanDataDirectory();
+        cleanQuadTreeDataDirectory();
 
         long startTime = System.currentTimeMillis();
 
@@ -62,7 +62,7 @@ public class QuadTreePopulator {
         return queryPoints;
     }
 
-    private static void cleanDataDirectory() {
+    private static void cleanQuadTreeDataDirectory() {
         try {
             FileUtils.cleanDirectory(new File(FILE_PATH_QUADTREE_DATA));
         } catch (IOException e) {
