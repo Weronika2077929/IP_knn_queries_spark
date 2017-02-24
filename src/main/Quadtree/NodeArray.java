@@ -18,6 +18,7 @@ public class NodeArray implements Serializable {
     private double h;
     private NodeArray opt_parent;
     private HashSet<Point> points;
+    private HashSet<SetOfPoints> pointsSets;
     private NodeType nodetype = NodeType.EMPTY;
     private NodeArray nw;
     private NodeArray ne;
@@ -25,6 +26,7 @@ public class NodeArray implements Serializable {
     private NodeArray se;
     private File file;
     private String fileName;
+    private long size;
     /**
      * Constructs a new quad tree node.
      *
@@ -42,7 +44,9 @@ public class NodeArray implements Serializable {
         this.h = h;
         this.opt_parent = opt_parent;
         this.points = new HashSet<>(NODE_CAPACITY);
+        this.pointsSets = new HashSet<>();
         this.file = null;
+        this.size = 0;
     }
 
     public double getX() {
@@ -89,12 +93,22 @@ public class NodeArray implements Serializable {
         this.opt_parent = opt_parent;
     }
 
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
+
     public void addPoint(Point point) {
         this.points.add(point);
-        //addPointToFile(point);
+        this.size++;
+    }
+
+    public void addSetOfPoints( SetOfPoints setOfPoints){
+        this.pointsSets.add(setOfPoints);
+        this.size += setOfPoints.getSize();
     }
 
     private void addPointToFile(Point point) {
+
         if(file == null) {
             this.createNewFile();
         }
@@ -134,7 +148,6 @@ public class NodeArray implements Serializable {
         return this.nodetype;
     }
 
-
     public void setNw(NodeArray nw) {
         this.nw = nw;
     }
@@ -167,6 +180,14 @@ public class NodeArray implements Serializable {
         return se;
     }
 
+    public HashSet<SetOfPoints> getPointsSets() {
+        return pointsSets;
+    }
+
+    public void setPointsSets(HashSet<SetOfPoints> pointsSets) {
+        this.pointsSets = pointsSets;
+    }
+
     public boolean isFull(){
         if( points.size() >= NODE_CAPACITY )
             return true;
@@ -183,16 +204,25 @@ public class NodeArray implements Serializable {
         return file.length();
     }
 
+    public long getSize() { return this.size;}
+
+    public void setSize(long size) { this.size = size;}
+
     public long getNodeSize() { return points.size();}
 
     public void clear() {
         this.points = null;
+        this.size = 0;
+        this.pointsSets = null;
     }
 
     public boolean nodeContains(Point point ) {
         return points.contains(point);
     }
 
+    public boolean nodeContains( SetOfPoints setOfPoints){
+        return pointsSets.contains(setOfPoints);
+    }
 
     public void deleteFile(){
         this.file.delete();
@@ -230,6 +260,9 @@ public class NodeArray implements Serializable {
                 e.printStackTrace();
             }
         }
+    }
 
+    public String toStringSetOfPoints(){
+        return pointsSets.toString();
     }
 }

@@ -33,11 +33,13 @@ public class KnnQueriesSparkQuadTreeCosi {
 
         JavaSparkContext sc = sparkConfigSetUp();
 
-        cleanQuadTreeDataDirectory();
+//        cleanQuadTreeDataDirectory();
 
-        QuadTreeArray quadTree = buildQuadTree();
+        QuadTreeArray quadTree = recreateQuadTreeFromSumamryFile();
 
-        quadTree.makeQuadTreeSummary();
+//        QuadTreeArray quadTree = buildQuadTree();
+
+//        quadTree.makeQuadTreeSummary();
 
         LinkedList<Point> queryPoints = loadQueryPoints();
 
@@ -54,6 +56,22 @@ public class KnnQueriesSparkQuadTreeCosi {
         long estimatedTime = System.currentTimeMillis() - startTime;
         System.out.println("Total time :" + estimatedTime + " miliseconds");
         System.out.println("Query response time: " + estimatedQueryResponseTime + " miliseconds");
+    }
+
+    private static QuadTreeArray recreateQuadTreeFromSumamryFile() {
+        QuadTreeArray quadTree = new QuadTreeArray(0,0,1000000,1000000);
+        quadTree.createQuadTreeFromSummaryFile(FILE_PATH_QUADTREE_DATA + "summary.txt");
+
+        FuncArray f = new FuncArray() {
+            @Override
+            public void call(QuadTreeArray quadTree, NodeArray node) {
+                System.out.println(node.toStringSetOfPoints());
+            }
+        };
+
+        quadTree.traverse(quadTree.getRootNodeArray(),f );
+
+        return quadTree;
     }
 
     private static JavaSparkContext sparkConfigSetUp() {
@@ -110,6 +128,8 @@ public class KnnQueriesSparkQuadTreeCosi {
 
     public static void nnQuery(QuadTreeArray quadTree, double x, double y, JavaSparkContext sc) {
         NodeArray mainPartition = quadTree.findPariton(x, y);
+
+        System.out.println("Main Partition: " + mainPartition.getFileName());
 
         JavaRDD<String> pointsfromFileString = sc.textFile( mainPartition.getFileName());
 

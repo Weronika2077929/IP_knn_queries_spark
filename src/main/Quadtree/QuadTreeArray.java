@@ -1,7 +1,5 @@
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedList;
+import java.util.*;
 import java.util.function.Function;
 
 /**
@@ -59,6 +57,19 @@ public class QuadTreeArray implements Serializable{
         if (this.insert(root, new Point(x, y, value))) {
             this.count_++;
         }
+    }
+
+    public void set(SetOfPoints setOfPoints){
+        NodeArray root = this.root_;
+        if(setOfPoints.getX()<root.getX() ||
+                setOfPoints.getY() < root.getY() ||
+                setOfPoints.getX() > root.getX() + root.getW() ||
+                setOfPoints.getY() > root.getY() + root.getH() ||
+                setOfPoints.getX() + setOfPoints.getW() >root.getX() + root.getW() ||
+                setOfPoints.getY() + setOfPoints.getH() > root.getY() + root.getH()){
+            throw new QuadTreeException("Out of bounds");
+        }
+        this.insert(root,setOfPoints);
     }
 
     /**
@@ -167,7 +178,6 @@ public class QuadTreeArray implements Serializable{
 
             case LEAF:
                 resposne = node;
-//                System.out.println(node.getX() + " " + node.getY() + " " + node.getW() + " " + node.getH());
                 break;
 
             case POINTER:
@@ -191,7 +201,6 @@ public class QuadTreeArray implements Serializable{
      * @private
      */
     private boolean insert(NodeArray parent, Point point) {
-        long start = System.nanoTime();
         Boolean result = false;
         switch (parent.getNodeArrayType()) {
             case EMPTY:
@@ -217,8 +226,35 @@ public class QuadTreeArray implements Serializable{
             default:
                 throw new QuadTreeException("Invalid nodeType in parent");
         }
-        long end = System.nanoTime();
-        time += end - start;
+        return result;
+    }
+
+    private boolean insert( NodeArray parent, SetOfPoints setOfPoints){
+        Boolean result = false;
+        switch (parent.getNodeArrayType()) {
+            case EMPTY:
+                this.setPointsForNodeArray(parent, setOfPoints);
+                result = true;
+                break;
+            case LEAF:
+                if ( parent.nodeContains(setOfPoints) ) {
+                    result = false;
+                } else if ( parent.isFull() ) {
+                    this.split(parent);
+                    result = insert(parent,setOfPoints);
+                } else {
+                    this.setPointsForNodeArray(parent, setOfPoints);
+                    result = true;
+                }
+                break;
+            case POINTER:
+                result = this.insert(
+                        this.getQuadrantForSetOfPoints(parent, setOfPoints),setOfPoints);
+                break;
+
+            default:
+                throw new QuadTreeException("Invalid nodeType in parent");
+        }
         return result;
     }
 
@@ -271,6 +307,27 @@ public class QuadTreeArray implements Serializable{
         }
     }
 
+
+    private NodeArray getQuadrantForSetOfPoints(NodeArray parent, SetOfPoints setOfPoints) {
+        double mx = parent.getX() + parent.getW() / 2;
+        double my = parent.getY() + parent.getH() / 2;
+// TODO Check if return statements are correct
+        if (setOfPoints.getX() < mx && setOfPoints.getX() + setOfPoints.getW() <= mx) {
+            if ( setOfPoints.getY() < my && setOfPoints.getY() + setOfPoints.getH() <my){
+                return parent.getNw();
+            } else {
+                return parent.getSw();
+            }
+        } else {
+            if ( setOfPoints.getY() < my && setOfPoints.getY() + setOfPoints.getH() <my){
+                return parent.getNe();
+            } else {
+                return parent.getSe();
+            }
+        }
+    }
+
+
     /**
      * Sets the point for a node, as long as the node is a leaf or empty.
      * @param {QuadTree.NodeArray} node The node to set the point for.
@@ -280,6 +337,11 @@ public class QuadTreeArray implements Serializable{
     private void setPointForNodeArray(NodeArray node, Point point) {
         node.setNodeArrayType(NodeType.LEAF);
         node.addPoint(point);
+    }
+
+    private void setPointsForNodeArray(NodeArray node, SetOfPoints setOfPoints){
+        node.setNodeArrayType(NodeType.LEAF);
+        node.addSetOfPoints(setOfPoints);
     }
 
     public boolean isCircleOverlappingSquare(Circle circle, NodeArray node){
@@ -337,12 +399,11 @@ public class QuadTreeArray implements Serializable{
         FunctionSaveToSummary saveNodeToSummary = new FunctionSaveToSummary() {
             @Override
             public void call(QuadTreeArray quadTree, NodeArray node, StringBuilder nodeSummary) {
-                nodeSummary.append(node.getX() + " " + node.getY() + " " + node.getW() + " " +  node.getH() + " " +  node.getNodeSize()+ " " + System.getProperty("line.separator") );
+                nodeSummary.append(node.getX() + " " + node.getY() + " " + node.getW() + " " +  node.getH() + " " +  node.getNodeSize()+ " " + node.getFileName() + " " +  System.getProperty("line.separator") );
             }
         };
 
         traverseWithStringBuilder(this.root_, saveNodeToSummary, summary);
-        System.out.println(summary.toString());
 
         this.saveQuadTreeSummaryToDisk(summary);
 
@@ -378,4 +439,39 @@ public class QuadTreeArray implements Serializable{
         }
         return summaryFile;
     }
+
+    public void createQuadTreeFromSummaryFile(String summaryFilename){
+
+        //        Skips first line in the file
+        try {
+            Scanner in = new Scanner(new FileReader(summaryFilename));
+            while(in.hasNext()) {
+                String[] data = in.nextLine().split(" ");
+                SetOfPoints setOfPoints = new SetOfPoints(Double.parseDouble(data[0]),
+                        Double.parseDouble(data[1]),
+                        Double.parseDouble(data[2]),
+                        Double.parseDouble(data[3]),
+                        Double.parseDouble(data[4]),
+                        data[5]);
+                this.set(setOfPoints);
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        this.pointAllNodesToDataFiles();
+    }
+
+    private void pointAllNodesToDataFiles() {
+        FuncArray setDataFileInNode = new FuncArray() {
+            @Override
+            public void call(QuadTreeArray quadTree, NodeArray node) {
+                Iterator<SetOfPoints> iterator = node.getPointsSets().iterator();
+                node.setFileName(iterator.next().getFileName());
+            }
+        };
+
+        traverse(this.root_,setDataFileInNode);
+    }
+
 }
