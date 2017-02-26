@@ -21,7 +21,7 @@ import java.util.Scanner;
 public class KnnQueriesSparkCore {
 
     private static String FILE_PATH = "C:/Users/Wera/Documents/4thyear/IP/Java_Spark_Project/src/main/resources/";
-    private static String FILE_PATH_QUADTREE_DATA = "C:/Users/Wera/Documents/4thyear/IP/Java_Spark_Project/src/main/resources/quadtree_data/";
+    private static String FILE_PATH_OUTPUT = "C:/Users/Wera/Documents/4thyear/IP/QuadTreeData/";
     private static String FILE_NAME_DATASET = FILE_PATH + "1000";
     private static String FILE_NAME_QUERY_POINTS = FILE_PATH + "10";
     private static double x_coordinate = 0;
@@ -45,7 +45,6 @@ public class KnnQueriesSparkCore {
 
         SparkConf conf = new SparkConf().setAppName("knn_queries_spark_core").setMaster("local");
         JavaSparkContext sc = new JavaSparkContext(conf);
-
 
         //        read all the query points from the file
         LinkedList<Point> queryPoints = new LinkedList<>();
@@ -83,6 +82,9 @@ public class KnnQueriesSparkCore {
             for (Tuple3 s : distancesToPoints.take(k)){
                 System.out.println(s);
             }
+
+//            distancesToPoints.saveAsTextFile(FILE_PATH_OUTPUT + "SparkCore.txt");
+//            distancesToPoints.coalesce(1).saveAsTextFile(FILE_PATH_OUTPUT + "test.txt");
 
             System.out.println();
             System.out.println();

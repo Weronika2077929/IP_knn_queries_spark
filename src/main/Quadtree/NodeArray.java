@@ -9,7 +9,7 @@ public class NodeArray implements Serializable {
 
     private String FILE_PATH = "C:/Users/Wera/Documents/4thyear/IP/QuadTreeData/";
 //    file size in bytes
-    private static int NODE_CAPACITY = 100;
+    private static int NODE_CAPACITY = 1000;
     private long FILE_LENGTH = 1024*1024;
 
     private double x;
@@ -189,7 +189,7 @@ public class NodeArray implements Serializable {
     }
 
     public boolean isFull(){
-        if( points.size() >= NODE_CAPACITY )
+        if( size >= NODE_CAPACITY )
             return true;
         return false;
     }

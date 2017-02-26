@@ -65,7 +65,7 @@ public class QuadTreeArray implements Serializable{
                 setOfPoints.getY() < root.getY() ||
                 setOfPoints.getX() > root.getX() + root.getW() ||
                 setOfPoints.getY() > root.getY() + root.getH() ||
-                setOfPoints.getX() + setOfPoints.getW() >root.getX() + root.getW() ||
+                setOfPoints.getX() + setOfPoints.getW() > root.getX() + root.getW() ||
                 setOfPoints.getY() + setOfPoints.getH() > root.getY() + root.getH()){
             throw new QuadTreeException("Out of bounds");
         }
@@ -228,7 +228,7 @@ public class QuadTreeArray implements Serializable{
         }
         return result;
     }
-
+// TODO Checking capacity before adding the file -> not after
     private boolean insert( NodeArray parent, SetOfPoints setOfPoints){
         Boolean result = false;
         switch (parent.getNodeArrayType()) {
@@ -240,7 +240,9 @@ public class QuadTreeArray implements Serializable{
                 if ( parent.nodeContains(setOfPoints) ) {
                     result = false;
                 } else if ( parent.isFull() ) {
-                    this.split(parent);
+                    System.out.println("SPLIT");
+                    this.splitSetOfPoints(parent);
+//                    this.split(parent);
                     result = insert(parent,setOfPoints);
                 } else {
                     this.setPointsForNodeArray(parent, setOfPoints);
@@ -282,8 +284,30 @@ public class QuadTreeArray implements Serializable{
         node.setSw(new NodeArray(x, y + hh, hw, hh, node));
         node.setSe(new NodeArray(x + hw, y + hh, hw, hh, node));
 
-        for( Point p : oldPoints){
-            this.insert(node, p);
+        for( Point point : oldPoints){
+            this.insert(node, point);
+        }
+    }
+
+    private void splitSetOfPoints(NodeArray node) {
+        HashSet<SetOfPoints> oldPoints = node.getPointsSets();
+        node.clear();
+//        node.deleteFile();
+        node.setNodeArrayType(NodeType.POINTER);
+
+        double x = node.getX();
+        double y = node.getY();
+        double hw = node.getW() / 2;
+        double hh = node.getH() / 2;
+
+        node.setNw(new NodeArray(x, y, hw, hh, node));
+        node.setNe(new NodeArray(x + hw, y, hw, hh, node));
+        node.setSw(new NodeArray(x, y + hh, hw, hh, node));
+        node.setSe(new NodeArray(x + hw, y + hh, hw, hh, node));
+
+        for( SetOfPoints setOfPoints : oldPoints){
+            System.out.println("Set of Points to reinsert " + setOfPoints.getX() + " " + setOfPoints.getY() + " " + setOfPoints.getW() + " " + setOfPoints.getH());
+            this.insert(node, setOfPoints);
         }
     }
 
@@ -313,15 +337,19 @@ public class QuadTreeArray implements Serializable{
         double my = parent.getY() + parent.getH() / 2;
 // TODO Check if return statements are correct
         if (setOfPoints.getX() < mx && setOfPoints.getX() + setOfPoints.getW() <= mx) {
-            if ( setOfPoints.getY() < my && setOfPoints.getY() + setOfPoints.getH() <my){
+            if ( setOfPoints.getY() < my && setOfPoints.getY() + setOfPoints.getH() <= my){
+                System.out.println("NW " + parent.getNw().getX() + " " + parent.getNw().getY()  );
                 return parent.getNw();
             } else {
+                System.out.println("SW " +  parent.getSw().getX() + " " + parent.getSw().getY() );
                 return parent.getSw();
             }
         } else {
-            if ( setOfPoints.getY() < my && setOfPoints.getY() + setOfPoints.getH() <my){
+            if ( setOfPoints.getY() < my && setOfPoints.getY() + setOfPoints.getH() <=my){
+                System.out.println("NE " + parent.getNe().getX() + " " + parent.getNe().getY() );
                 return parent.getNe();
             } else {
+                System.out.println("SE " +  parent.getSe().getX() + " " + parent.getSe().getY() );
                 return parent.getSe();
             }
         }
@@ -388,7 +416,6 @@ public class QuadTreeArray implements Serializable{
             }
         };
 
-
         traverse(this.root_, saveNodeToFile);
     }
 
@@ -399,7 +426,13 @@ public class QuadTreeArray implements Serializable{
         FunctionSaveToSummary saveNodeToSummary = new FunctionSaveToSummary() {
             @Override
             public void call(QuadTreeArray quadTree, NodeArray node, StringBuilder nodeSummary) {
-                nodeSummary.append(node.getX() + " " + node.getY() + " " + node.getW() + " " +  node.getH() + " " +  node.getNodeSize()+ " " + node.getFileName() + " " +  System.getProperty("line.separator") );
+                nodeSummary.append(node.getX()).append(" ")
+                        .append(node.getY()).append(" ")
+                        .append(node.getW()).append(" ")
+                        .append(node.getH()).append(" ")
+                        .append(node.getNodeSize()).append(" ")
+                        .append(node.getFileName()).append(" ")
+                        .append(System.getProperty("line.separator"));
             }
         };
 
@@ -442,11 +475,10 @@ public class QuadTreeArray implements Serializable{
 
     public void createQuadTreeFromSummaryFile(String summaryFilename){
 
-        //        Skips first line in the file
         try {
-            Scanner in = new Scanner(new FileReader(summaryFilename));
-            while(in.hasNext()) {
-                String[] data = in.nextLine().split(" ");
+            BufferedReader in = new BufferedReader(new FileReader(summaryFilename));
+            in.lines().forEach(line -> {
+                String[] data = line.split(" ");
                 SetOfPoints setOfPoints = new SetOfPoints(Double.parseDouble(data[0]),
                         Double.parseDouble(data[1]),
                         Double.parseDouble(data[2]),
@@ -454,7 +486,7 @@ public class QuadTreeArray implements Serializable{
                         Double.parseDouble(data[4]),
                         data[5]);
                 this.set(setOfPoints);
-            }
+            });
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }

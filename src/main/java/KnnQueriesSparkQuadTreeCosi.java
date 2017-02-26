@@ -11,10 +11,7 @@ import org.apache.spark.api.java.JavaSparkContext;
 import scala.Tuple2;
 import scala.Tuple3;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.LinkedList;
 import java.util.Scanner;
 
@@ -23,7 +20,7 @@ public class KnnQueriesSparkQuadTreeCosi {
 
     private static String FILE_PATH = "C:/Users/Wera/Documents/4thyear/IP/Java_Spark_Project/src/main/resources/";
     private static String FILE_PATH_QUADTREE_DATA = "C:/Users/Wera/Documents/4thyear/IP/QuadTreeData/";
-    private static String FILE_NAME_DATASET = FILE_PATH + "1000";
+    private static String FILE_NAME_DATASET = FILE_PATH + "1000000";
     private static String FILE_NAME_QUERY_POINTS = FILE_PATH + "10";
     private static int k = 5;
 
@@ -33,14 +30,21 @@ public class KnnQueriesSparkQuadTreeCosi {
 
         JavaSparkContext sc = sparkConfigSetUp();
 
-//        cleanQuadTreeDataDirectory();
-
         QuadTreeArray quadTree = recreateQuadTreeFromSumamryFile();
 
+//        FuncArray f = new FuncArray() {
+//            @Override
+//            public void call(QuadTreeArray quadTree, NodeArray node) {
+//                System.out.println(node.getFileName());
+//            }
+//        };
+//
+//        quadTree.traverse(quadTree.getRootNodeArray(), f);
+//        cleanQuadTreeDataDirectory();
 //        QuadTreeArray quadTree = buildQuadTree();
-
 //        quadTree.makeQuadTreeSummary();
 
+//        TODO put in array instead of LinkedList
         LinkedList<Point> queryPoints = loadQueryPoints();
 
         long startQueryTime = System.currentTimeMillis();
@@ -61,15 +65,6 @@ public class KnnQueriesSparkQuadTreeCosi {
     private static QuadTreeArray recreateQuadTreeFromSumamryFile() {
         QuadTreeArray quadTree = new QuadTreeArray(0,0,1000000,1000000);
         quadTree.createQuadTreeFromSummaryFile(FILE_PATH_QUADTREE_DATA + "summary.txt");
-
-        FuncArray f = new FuncArray() {
-            @Override
-            public void call(QuadTreeArray quadTree, NodeArray node) {
-                System.out.println(node.toStringSetOfPoints());
-            }
-        };
-
-        quadTree.traverse(quadTree.getRootNodeArray(),f );
 
         return quadTree;
     }
@@ -103,17 +98,17 @@ public class KnnQueriesSparkQuadTreeCosi {
 
     private static QuadTreeArray buildQuadTree() {
         QuadTreeArray quadTree = new QuadTreeArray(0,0,1000000,1000000);
-//        populate quadtree
+//        populate
+        System.out.println("populating quadtree");
         try {
-            Scanner in = new Scanner(new FileReader(FILE_NAME_DATASET));
-            while(in.hasNext()) {
-                String[] data = in.nextLine().split(",");
+            BufferedReader in = new BufferedReader(new FileReader(FILE_NAME_DATASET));
+            in.lines().forEach(line -> {
+                String[] data = line.split(",");
                 quadTree.set(Double.parseDouble(data[0]), Double.parseDouble(data[1]), null);
-            }
+            });
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-
         quadTree.saveQuadTreetoDisk();
         return quadTree;
     }
@@ -128,8 +123,6 @@ public class KnnQueriesSparkQuadTreeCosi {
 
     public static void nnQuery(QuadTreeArray quadTree, double x, double y, JavaSparkContext sc) {
         NodeArray mainPartition = quadTree.findPariton(x, y);
-
-        System.out.println("Main Partition: " + mainPartition.getFileName());
 
         JavaRDD<String> pointsfromFileString = sc.textFile( mainPartition.getFileName());
 
@@ -184,10 +177,8 @@ public class KnnQueriesSparkQuadTreeCosi {
     private static Circle findFurthestNeighbourCircle(double x_coordinate, double y_coordinate, JavaRDD<Tuple3<Double,Double,Double>>  nearestNeighbours) {
         double distance = 0;
         for (Tuple3 s : nearestNeighbours.take(k)){
-//            System.out.println("Point: " + s._1() + " " + s._2() + " " + s._3());
             distance = (double) s._3();
         }
-//        System.out.println("Radious: " + distance);
         return new Circle(x_coordinate, y_coordinate, distance);
     }
 
