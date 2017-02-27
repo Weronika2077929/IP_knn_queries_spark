@@ -1,6 +1,7 @@
 
 import java.io.*;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 
 /**
  * Created by Wera on 29/01/2017.
@@ -9,7 +10,7 @@ public class NodeArray implements Serializable {
 
     private String FILE_PATH = "C:/Users/Wera/Documents/4thyear/IP/QuadTreeData/";
 //    file size in bytes
-    private static int NODE_CAPACITY = 1000;
+    public static int NODE_CAPACITY = 1000;
     private long FILE_LENGTH = 1024*1024;
 
     private double x;
@@ -17,8 +18,10 @@ public class NodeArray implements Serializable {
     private double w;
     private double h;
     private NodeArray opt_parent;
-    private HashSet<Point> points;
-    private HashSet<SetOfPoints> pointsSets;
+//    private HashSet<Point> points;
+    private LinkedHashSet<Point> points;
+//    private HashSet<SetOfPoints> pointsSets;
+    private LinkedHashSet<SetOfPoints> pointsSets;
     private NodeType nodetype = NodeType.EMPTY;
     private NodeArray nw;
     private NodeArray ne;
@@ -43,8 +46,9 @@ public class NodeArray implements Serializable {
         this.w = w;
         this.h = h;
         this.opt_parent = opt_parent;
-        this.points = new HashSet<>(NODE_CAPACITY);
-        this.pointsSets = new HashSet<>();
+//        this.points = new HashSet<>(NODE_CAPACITY);
+        this.points = new LinkedHashSet<>(NODE_CAPACITY);
+        this.pointsSets = new LinkedHashSet<>();
         this.file = null;
         this.size = 0;
     }
@@ -184,9 +188,9 @@ public class NodeArray implements Serializable {
         return pointsSets;
     }
 
-    public void setPointsSets(HashSet<SetOfPoints> pointsSets) {
-        this.pointsSets = pointsSets;
-    }
+//    public void setPointsSets(HashSet<SetOfPoints> pointsSets) {
+//        this.pointsSets = pointsSets;
+//    }
 
     public boolean isFull(){
         if( size >= NODE_CAPACITY )

@@ -20,8 +20,8 @@ import static spark.Spark.*;
 
 public class KnnQueriesSparkSQL {
     private static String FILE_PATH = "C:/Users/Wera/Documents/4thyear/IP/Java_Spark_Project/src/main/resources/";
-    private static String FILE_PATH_OUTPUT = "C:/Users/Wera/Documents/4thyear/IP/QuadTreeData/";
-    private static String FILE_NAME_DATASET = FILE_PATH + "1000000";
+    private static String FILE_PATH_OUTPUT = "C:/Users/Wera/Documents/4thyear/IP/Java_Spark_Project/src/main/output/";
+    private static String FILE_NAME_DATASET = FILE_PATH + "1000";
     private static String FILE_NAME_QUERY_POINTS = FILE_PATH + "10";
 
     public static void main(String[] args) {

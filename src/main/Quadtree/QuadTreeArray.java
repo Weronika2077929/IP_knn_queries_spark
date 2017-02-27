@@ -240,9 +240,7 @@ public class QuadTreeArray implements Serializable{
                 if ( parent.nodeContains(setOfPoints) ) {
                     result = false;
                 } else if ( parent.isFull() ) {
-                    System.out.println("SPLIT");
                     this.splitSetOfPoints(parent);
-//                    this.split(parent);
                     result = insert(parent,setOfPoints);
                 } else {
                     this.setPointsForNodeArray(parent, setOfPoints);
@@ -306,7 +304,6 @@ public class QuadTreeArray implements Serializable{
         node.setSe(new NodeArray(x + hw, y + hh, hw, hh, node));
 
         for( SetOfPoints setOfPoints : oldPoints){
-            System.out.println("Set of Points to reinsert " + setOfPoints.getX() + " " + setOfPoints.getY() + " " + setOfPoints.getW() + " " + setOfPoints.getH());
             this.insert(node, setOfPoints);
         }
     }
@@ -338,18 +335,14 @@ public class QuadTreeArray implements Serializable{
 // TODO Check if return statements are correct
         if (setOfPoints.getX() < mx && setOfPoints.getX() + setOfPoints.getW() <= mx) {
             if ( setOfPoints.getY() < my && setOfPoints.getY() + setOfPoints.getH() <= my){
-                System.out.println("NW " + parent.getNw().getX() + " " + parent.getNw().getY()  );
                 return parent.getNw();
             } else {
-                System.out.println("SW " +  parent.getSw().getX() + " " + parent.getSw().getY() );
                 return parent.getSw();
             }
         } else {
             if ( setOfPoints.getY() < my && setOfPoints.getY() + setOfPoints.getH() <=my){
-                System.out.println("NE " + parent.getNe().getX() + " " + parent.getNe().getY() );
                 return parent.getNe();
             } else {
-                System.out.println("SE " +  parent.getSe().getX() + " " + parent.getSe().getY() );
                 return parent.getSe();
             }
         }
