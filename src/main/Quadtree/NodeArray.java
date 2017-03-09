@@ -10,7 +10,7 @@ public class NodeArray implements Serializable {
 
     private String FILE_PATH = "C:/Users/Wera/Documents/4thyear/IP/QuadTreeData/";
 //    file size in bytes
-    public static int NODE_CAPACITY = 1000;
+    public int nodeSize;
     private long FILE_LENGTH = 1024*1024;
 
     private double x;
@@ -18,9 +18,7 @@ public class NodeArray implements Serializable {
     private double w;
     private double h;
     private NodeArray opt_parent;
-//    private HashSet<Point> points;
     private LinkedHashSet<Point> points;
-//    private HashSet<SetOfPoints> pointsSets;
     private LinkedHashSet<SetOfPoints> pointsSets;
     private NodeType nodetype = NodeType.EMPTY;
     private NodeArray nw;
@@ -40,17 +38,18 @@ public class NodeArray implements Serializable {
      * @param {Node}   opt_parent Optional parent node.
      * @constructor
      */
-    public NodeArray(double x, double y, double w, double h, NodeArray opt_parent) {
+    public NodeArray(double x, double y, double w, double h, int nodeSize) {
         this.x = x;
         this.y = y;
         this.w = w;
         this.h = h;
         this.opt_parent = opt_parent;
 //        this.points = new HashSet<>(NODE_CAPACITY);
-        this.points = new LinkedHashSet<>(NODE_CAPACITY);
+        this.points = new LinkedHashSet<>(nodeSize);
         this.pointsSets = new LinkedHashSet<>();
         this.file = null;
         this.size = 0;
+        this.nodeSize = nodeSize;
     }
 
     public double getX() {
@@ -193,7 +192,7 @@ public class NodeArray implements Serializable {
 //    }
 
     public boolean isFull(){
-        if( size >= NODE_CAPACITY )
+        if( size >= this.nodeSize )
             return true;
         return false;
     }

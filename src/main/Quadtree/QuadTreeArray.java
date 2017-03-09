@@ -1,4 +1,5 @@
 import java.io.*;
+import java.nio.file.Files;
 import java.util.*;
 import java.util.function.Function;
 
@@ -11,7 +12,8 @@ import java.util.function.Function;
  */
 public class QuadTreeArray implements Serializable{
 
-    private static String FILE_PATH_SUMMARY = "C:/Users/Wera/Documents/4thyear/IP/QuadTreeData/";
+    private static String FILE_PATH_SUMMARY = "C:/Users/Wera/Documents/4thyear/IP/QuadTreeSummaries/";
+
     private int count = 0;
     public long time = 0;
 
@@ -19,6 +21,7 @@ public class QuadTreeArray implements Serializable{
     private int count_ = 0;
 
     private String summaryFilename;
+    private int nodeSize;
 
     /**
      * Constructs a new quad tree.
@@ -28,8 +31,9 @@ public class QuadTreeArray implements Serializable{
      * @param {double} maxX Maximum x-value that can be held in tree.
      * @param {double} maxY Maximum y-value that can be held in tree.
      */
-    public QuadTreeArray(double minX, double minY, double maxX, double maxY) {
-        this.root_ = new NodeArray(minX, minY, maxX - minX, maxY - minY, null);
+    public QuadTreeArray(double minX, double minY, double maxX, double maxY, int nodeSize) {
+        this.nodeSize = nodeSize;
+        this.root_ = new NodeArray(minX, minY, maxX - minX, maxY - minY, nodeSize);
     }
 
     /**
@@ -277,10 +281,10 @@ public class QuadTreeArray implements Serializable{
         double hw = node.getW() / 2;
         double hh = node.getH() / 2;
 
-        node.setNw(new NodeArray(x, y, hw, hh, node));
-        node.setNe(new NodeArray(x + hw, y, hw, hh, node));
-        node.setSw(new NodeArray(x, y + hh, hw, hh, node));
-        node.setSe(new NodeArray(x + hw, y + hh, hw, hh, node));
+        node.setNw(new NodeArray(x, y, hw, hh, this.nodeSize ));
+        node.setNe(new NodeArray(x + hw, y, hw, hh, this.nodeSize));
+        node.setSw(new NodeArray(x, y + hh, hw, hh, this.nodeSize));
+        node.setSe(new NodeArray(x + hw, y + hh, hw, hh, this.nodeSize));
 
         for( Point point : oldPoints){
             this.insert(node, point);
@@ -298,10 +302,10 @@ public class QuadTreeArray implements Serializable{
         double hw = node.getW() / 2;
         double hh = node.getH() / 2;
 
-        node.setNw(new NodeArray(x, y, hw, hh, node));
-        node.setNe(new NodeArray(x + hw, y, hw, hh, node));
-        node.setSw(new NodeArray(x, y + hh, hw, hh, node));
-        node.setSe(new NodeArray(x + hw, y + hh, hw, hh, node));
+        node.setNw(new NodeArray(x, y, hw, hh, this.nodeSize));
+        node.setNe(new NodeArray(x + hw, y, hw, hh, this.nodeSize));
+        node.setSw(new NodeArray(x, y + hh, hw, hh, this.nodeSize));
+        node.setSe(new NodeArray(x + hw, y + hh, hw, hh, this.nodeSize));
 
         for( SetOfPoints setOfPoints : oldPoints){
             this.insert(node, setOfPoints);
@@ -412,7 +416,7 @@ public class QuadTreeArray implements Serializable{
         traverse(this.root_, saveNodeToFile);
     }
 
-    public void makeQuadTreeSummary() {
+    public void makeQuadTreeSummary(String summaryFilename) {
 
         StringBuilder summary = new StringBuilder();
 
@@ -431,13 +435,21 @@ public class QuadTreeArray implements Serializable{
 
         traverseWithStringBuilder(this.root_, saveNodeToSummary, summary);
 
-        this.saveQuadTreeSummaryToDisk(summary);
+        this.saveQuadTreeSummaryToDisk(summary, summaryFilename);
 
     }
 
-    private void saveQuadTreeSummaryToDisk(StringBuilder summary) {
+    private void saveQuadTreeSummaryToDisk(StringBuilder summary, String summaryFilename) {
 
-        File quadTreeSummaryFile = this.createQuadTreeSummaryFile();
+        File fileToDelete = new File (FILE_PATH_SUMMARY + summaryFilename);
+        try {
+            Files.deleteIfExists(fileToDelete.toPath());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+        File quadTreeSummaryFile = this.createQuadTreeSummaryFile(summaryFilename);
 
         BufferedWriter bw = null;
         try {
@@ -455,9 +467,9 @@ public class QuadTreeArray implements Serializable{
         }
     }
 
-    private File createQuadTreeSummaryFile() {
-        this.summaryFilename = FILE_PATH_SUMMARY + "summary.txt";
-        File summaryFile = new File(summaryFilename);
+    private File createQuadTreeSummaryFile(String summaryFilename) {
+        this.summaryFilename = FILE_PATH_SUMMARY + summaryFilename;
+        File summaryFile = new File(this.summaryFilename);
         try {
             summaryFile.createNewFile();
         } catch (IOException e) {

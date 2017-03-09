@@ -9,8 +9,7 @@ import org.apache.spark.sql.SQLContext;
 import org.apache.spark.sql.catalog.Function;
 import org.apache.spark.sql.types.DataTypes;
 
-import java.io.FileNotFoundException;
-import java.io.FileReader;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Scanner;
@@ -20,21 +19,16 @@ import static spark.Spark.*;
 
 public class KnnQueriesSparkSQL {
     private static String FILE_PATH = "C:/Users/Wera/Documents/4thyear/IP/Java_Spark_Project/src/main/resources/";
-    private static String FILE_PATH_OUTPUT = "C:/Users/Wera/Documents/4thyear/IP/Java_Spark_Project/src/main/output/";
-    private static String FILE_NAME_DATASET = FILE_PATH + "1000";
-    private static String FILE_NAME_QUERY_POINTS = FILE_PATH + "10";
+    private static String FILE_PATH_OUTPUT = "C:/Users/Wera/Documents/4thyear/IP/time_output_SparkSql.txt";
+    private static String DATA_TYPE = "normal";
+    private static String DATASET = "10000000";
+    private static String QUERY_POINTS = "10";
+    private static String FILE_NAME_DATASET = FILE_PATH + DATASET;
+    private static String FILE_NAME_QUERY_POINTS = FILE_PATH + QUERY_POINTS;
+    private static int k = 10;
+
 
     public static void main(String[] args) {
-        long startTime = System.currentTimeMillis();
-//        get("/hello", (req, res) -> "Hello world");
-
-//        number of nn queries to find
-        int k = 5;
-
-//        the coordinates of the main point of reference
-        double x_coordinate = 0;
-        double y_coordinate = 0;
-
 
         LinkedList<Double[]> queryPoints = new LinkedList<>();
         try {
@@ -58,28 +52,74 @@ public class KnnQueriesSparkSQL {
                 .config("spark.some.config.option", "some-value")
                 .getOrCreate();
 
+        long startTime1 = System.currentTimeMillis();
+
         Dataset<Row> df = spark.read().csv(FILE_NAME_DATASET);
 
         df.createOrReplaceTempView("points");
 
-//        Dataset<Row> sqlVarriable = spark.sql("SELECT * FROM points ORDER BY POWER( " + x_coordinate + " + _c0 , 2) + POWER(" + y_coordinate + " + _c1 , 2) LIMIT " + k);
-//        sqlVarriable.show();
+        long estimatedTime = System.currentTimeMillis() - startTime1;
 
         for( Double[] queryPoint : queryPoints){
             System.out.println(queryPoint[0] + " " + queryPoint[1]);
+
+            long startTime2 = System.currentTimeMillis();
              Dataset<Row> sqlVar = spark.sql("SELECT * FROM points ORDER BY SQRT(POWER( "
                      + queryPoint[0]
                      + " - _c0 , 2) + POWER("
                      + queryPoint[1]
                      + " - _c1 , 2))");
-
+             estimatedTime += System.currentTimeMillis() - startTime2;
             sqlVar.show(k);
-//            sqlVar.rdd().saveAsTextFile(FILE_PATH_OUTPUT + "sparkSQL.txt");
-//            sqlVar.write().save(FILE_PATH_OUTPUT + "sparkSQL.txt");
-
         }
 
-        long estimatedTime = System.currentTimeMillis() - startTime;
         System.out.println(estimatedTime + " miliseconds");
+
+        saveTimeMeasurementsToFile(estimatedTime);
+    }
+
+    private static void saveTimeMeasurementsToFile(long estimatedTime) {
+        StringBuilder timeOutput = new StringBuilder();
+        timeOutput.append(DATA_TYPE).append(",")
+                .append(DATASET).append(",")
+                .append(QUERY_POINTS).append(",")
+                .append(k).append(",")
+                .append(estimatedTime).append(",")
+                .append(System.getProperty("line.separator"));
+
+
+        File file = new File(FILE_PATH_OUTPUT);
+
+        try {
+            file.createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        BufferedWriter bw = null;
+        try {
+            bw = new BufferedWriter(new FileWriter(file, true));
+            if(file.length() == 0) {
+                StringBuilder columnNames = new StringBuilder();
+                columnNames.append("DATA_TYPE").append(",")
+                        .append("DATASET").append(",")
+                        .append("QUERY_POINTS").append(",")
+                        .append("k").append(",")
+                        .append("estimatedQueryResponseTime").append(",")
+                        .append(System.getProperty("line.separator"));
+                bw.write(columnNames.toString());
+            }
+            bw.append(timeOutput.toString());
+            bw.flush();
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+        } finally {
+            try {
+                bw.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
     }
 }
